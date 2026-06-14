@@ -2,21 +2,28 @@
 import { useState, useEffect } from 'react';
 
 export default function EmployeesPage() {
+  const [username, setUsername] = useState('');
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     name: '', email: '', phone: '', role: '', department: '', salary: ''
   });
   const [editId, setEditId] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [statusMessage, setStatusMessage] = useState('');
+  const [statusType, setStatusType] = useState('');
 
-  // 1. Fetch data from local JSON API
   const fetchEmployees = async () => {
     try {
       const res = await fetch('/api/employees');
       const result = await res.json();
-      if (result.success) setEmployees(result.data);
+      if (result.success) {
+        setEmployees(result.data);
+      } else {
+        console.error('Failed to load employees:', result.error || result.message);
+      }
     } catch (err) {
-      console.error("Error fetching employees:", err);
+      console.error('Error fetching employees:', err);
     } finally {
       setLoading(false);
     }
@@ -24,75 +31,130 @@ export default function EmployeesPage() {
 
   useEffect(() => {
     fetchEmployees();
+    if (typeof window !== 'undefined') {
+      const storedName = localStorage.getItem('userName');
+      if (storedName) setUsername(storedName);
+    }
   }, []);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // 2. Submit Handle (Add or Update)
+  const clearStatus = () => {
+    setStatusMessage('');
+    setStatusType('');
+  };
+
+  const clearForm = () => {
+    setFormData({ name: '', email: '', phone: '', role: '', department: '', salary: '' });
+    setEditId(null);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (saving) return;
+
+    clearStatus();
+    setSaving(true);
+
     const method = editId ? 'PUT' : 'POST';
     const url = editId ? `/api/employees/${editId}` : '/api/employees';
+    const payload = {
+      ...formData,
+      salary: formData.salary !== '' ? Number(formData.salary) : 0,
+    };
 
     try {
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
+
       const result = await res.json();
 
-      if (result.success) {
-        fetchEmployees(); // List refresh karo
-        setFormData({ name: '', email: '', phone: '', role: '', department: '', salary: '' });
-        setEditId(null);
-        alert(editId ? "Employee details updated!" : "Employee added successfully!");
-      } else {
-        alert("Error: " + result.error);
+      if (!res.ok || !result.success) {
+        const message = result?.error || result?.message || 'Unable to save employee. Please check your input.';
+        setStatusType('error');
+        setStatusMessage(message);
+        return;
+      }
+
+      await fetchEmployees();
+      clearForm();
+      setStatusType('success');
+      const successText = editId ? 'Employee details updated successfully.' : 'Employee added successfully.';
+      setStatusMessage(successText);
+      if (typeof window !== 'undefined') {
+        window.alert(successText);
       }
     } catch (err) {
-      alert("Something went wrong!");
+      console.error('Save employee failed:', err);
+      setStatusType('error');
+      setStatusMessage('Something went wrong while saving. Please try again.');
+    } finally {
+      setSaving(false);
     }
   };
 
-  // 3. Edit Trigger
   const handleEdit = (emp) => {
-    setEditId(emp._id); // Yahan string ID track hogi
+    clearStatus();
+    setEditId(String(emp._id));
     setFormData({
-      name: emp.name,
-      email: emp.email,
-      phone: emp.phone,
-      role: emp.role,
-      department: emp.department,
-      salary: emp.salary
+      name: emp.name || '',
+      email: emp.email || '',
+      phone: emp.phone || '',
+      role: emp.role || '',
+      department: emp.department || '',
+      salary: emp.salary != null ? String(emp.salary) : ''
     });
   };
 
-  // 4. Delete Handle
   const handleDelete = async (id) => {
-    if (!confirm("Are you sure you want to remove this employee?")) return;
+    if (!confirm('Are you sure you want to remove this employee?')) return;
+
+    clearStatus();
+
     try {
       const res = await fetch(`/api/employees/${id}`, { method: 'DELETE' });
       const result = await res.json();
-      if (result.success) {
-        fetchEmployees(); // List refresh karo
-        alert("Employee deleted successfully!");
-      } else {
-        alert("Could not delete from file!");
+
+      if (!res.ok || !result.success) {
+        const message = result?.error || result?.message || 'Could not delete the employee.';
+        setStatusType('error');
+        setStatusMessage(message);
+        return;
+      }
+
+      await fetchEmployees();
+      setStatusType('success');
+      setStatusMessage('Employee deleted successfully.');
+      if (typeof window !== 'undefined') {
+        window.alert('Employee deleted successfully.');
+      }
+
+      if (editId === id) {
+        clearForm();
       }
     } catch (err) {
-      alert("Could not delete!");
+      console.error('Delete employee failed:', err);
+      setStatusType('error');
+      setStatusMessage('Could not delete the employee. Please try again.');
     }
   };
 
   return (
     <div style={{ fontFamily: 'Arial, sans-serif', backgroundColor: '#111827', color: '#ffffff', minHeight: '100vh', padding: '40px 20px' }}>
       <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
-        <h1 style={{ color: '#60a5fa', marginBottom: '30px', borderBottom: '2px solid #374151', paddingBottom: '15px' }}>
+        <h1 style={{ color: '#60a5fa', marginBottom: '12px', borderBottom: '2px solid #374151', paddingBottom: '15px' }}>
           📊 Employee Management Dashboard
         </h1>
+        {username && (
+          <p style={{ marginTop: 0, marginBottom: '24px', color: '#c7d2fe', fontSize: '1rem' }}>
+            Welcome back, <strong style={{ color: '#f8fafc' }}>{username}</strong>!
+          </p>
+        )}
 
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '30px' }}>
           
@@ -134,14 +196,20 @@ export default function EmployeesPage() {
                 <input type="number" name="salary" value={formData.salary} onChange={handleChange} required
                   style={{ width: '100%', padding: '10px', backgroundColor: '#374151', border: '1px solid #4b5563', color: '#fff', borderRadius: '6px', boxSizing: 'border-box' }} />
               </div>
-              <button type="submit" style={{ backgroundColor: '#2563eb', color: '#fff', padding: '12px', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', marginTop: '10px' }}>
-                {editId ? "Update Employee" : "Save Employee"}
+              <button type="submit" disabled={saving} style={{ backgroundColor: '#2563eb', color: '#fff', padding: '12px', border: 'none', borderRadius: '6px', cursor: saving ? 'not-allowed' : 'pointer', fontWeight: 'bold', marginTop: '10px' }}>
+                {saving ? (editId ? 'Updating...' : 'Saving...') : editId ? 'Update Employee' : 'Save Employee'}
               </button>
               {editId && (
-                <button type="button" onClick={() => { setEditId(null); setFormData({ name: '', email: '', phone: '', role: '', department: '', salary: '' }); }}
+                <button type="button" onClick={() => { clearStatus(); clearForm(); }}
                   style={{ backgroundColor: '#4b5563', color: '#fff', padding: '10px', border: 'none', borderRadius: '6px', cursor: 'pointer', marginTop: '5px' }}>
                   Cancel Edit
                 </button>
+              )}
+
+              {statusMessage && (
+                <div style={{ marginTop: '16px', padding: '12px', borderRadius: '10px', backgroundColor: statusType === 'error' ? '#7f1d1d' : '#0f5132', color: '#f8fafc' }}>
+                  {statusMessage}
+                </div>
               )}
             </form>
           </div>

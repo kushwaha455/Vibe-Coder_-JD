@@ -1,0 +1,38 @@
+﻿
+> vibe-task-manager@0.1.0 build
+> next build
+
+Γû▓ Next.js 16.2.9 (Turbopack)
+- Environments: .env.local
+
+  Creating an optimized production build ...
+Γ£ô Compiled successfully in 5.8s
+  Running TypeScript ...
+  Finished TypeScript in 3.2s ...
+  Collecting page data using 7 workers ...
+  Generating static pages using 7 workers (0/12) ...
+  Generating static pages using 7 workers (3/12) 
+  Generating static pages using 7 workers (6/12) 
+  Generating static pages using 7 workers (9/12) 
+Γ£ô Generating static pages using 7 workers (12/12) in 467ms
+  Finalizing page optimization ...
+
+Route (app)
+Γöî Γùï /
+Γö£ Γùï /_not-found
+Γö£ ╞Æ /api/auth
+Γö£ ╞Æ /api/auth/debug/last-otp
+Γö£ ╞Æ /api/auth/register
+Γö£ ╞Æ /api/auth/resend
+Γö£ ╞Æ /api/auth/verify
+Γö£ ╞Æ /api/employees
+Γö£ ╞Æ /api/employees/[id]
+Γö£ ╞Æ /api/tasks
+Γö£ ╞Æ /api/tasks/[id]
+Γö£ Γùï /login
+Γöö Γùï /register
+
+
+Γùï  (Static)   prerendered as static content
+╞Æ  (Dynamic)  server-rendered on demand
+

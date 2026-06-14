@@ -10,15 +10,23 @@ export default function Header() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window === 'undefined') return;
+
+    const updateAuthState = () => {
       setIsAuthenticated(Boolean(localStorage.getItem('token')));
-    }
+    };
+
+    updateAuthState();
+    window.addEventListener('storage', updateAuthState);
+    return () => window.removeEventListener('storage', updateAuthState);
   }, [pathname]);
 
   function handleLogout(e) {
     e.preventDefault();
     if (typeof window !== 'undefined') {
       localStorage.removeItem('token');
+      localStorage.removeItem('userName');
+      setIsAuthenticated(false);
       router.push('/login');
     }
   }

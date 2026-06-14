@@ -1,0 +1,82 @@
+[
+  {
+    "_id": "1",
+    "name": "sk",
+    "email": "skk@gmail.com",
+    "password": "$2a$10$IAIezvTDM8N94LVvokokU.Td2jAEZARpRD4tB50CPioLc4oc/3nr."
+  },
+  {
+    "_id": "2",
+    "name": "Shailendra",
+    "email": "Sk@gmail.com",
+    "password": "$2a$10$1hnwMquyTob.20b0KEn8u.n43WeGbkInCFTTUipoTX.A3FFFYxxjq"
+  },
+  {
+    "_id": "3",
+    "name": "Shahnawaz",
+    "email": "s@gmail.com",
+    "password": "$2a$10$rqSCeb0xYaHr69M8cI6ZF.GWjsuJYpOOTnRFd1nSlLCWU2zMhJbZ2"
+  },
+  {
+    "_id": "4",
+    "name": "Shailendra",
+    "email": "skushawah455@gmail.com",
+    "password": "$2a$10$12eL6rucMPNvnZII7.Yt2eYCO3BXpsAefNmBJDzrRxh6YhNIkHlcu",
+    "verified": true
+  },
+  {
+    "_id": "5",
+    "name": "Shailendra",
+    "email": "kushwahashailendra@gmail.com",
+    "password": "$2a$10$6h3.oAHW11e/O0hPzC6mmew2PFsdGHZAMmAKb5t9OlcNd.PkZHiOC",
+    "verified": true
+  },
+  {
+    "_id": "6",
+    "name": "Anchal Gupta",
+    "email": "skillmanthntechnology@gmail.com",
+    "password": "$2a$10$UC9CfOO89z2EF7n5K5AWm.Njj0zu6ldaL/5IEsBEQCbGRS1aO026m",
+    "verified": false,
+    "otpHash": "$2a$10$ygOTAwvHV7Osp8TZM5r0VOyFuTGRxmb9M87AsXIZ2rQ8Hz3hPzCMO",
+    "otpExpires": 1781441611827,
+    "otpSentAt": 1781440346198,
+    "lastOtp": "576225"
+  },
+  {
+    "_id": "7",
+    "name": "Shailendra",
+    "email": "shahnawazali7230@gmail.com",
+    "password": "$2a$10$28Q6uN8qw5nVXVW3.t9aQOzcguGalcZgd3IO2Mzw0Kiws0XA5Z30G",
+    "verified": false,
+    "otpHash": "$2a$10$r3TzKaarRraVFDalvH9jmOl2GHeqmW/2og9/OIPsI53RH1cOMzDMC",
+    "otpExpires": 1781437372212,
+    "otpSentAt": 1781436772212
+  },
+  {
+    "_id": "8",
+    "name": "Shailendra",
+    "email": "skushawah45@gmail.com",
+    "password": "$2a$10$oILLcY03WqpD7d2A//gWQOhmP/qJZEpW5ZSuUAcMDxrgzfw/wQITK",
+    "verified": false,
+    "otpHash": "$2a$10$jAGf0LNFY/O/ygHKvE/KCubn4kaWyJ/fzabnLkl6anoQwrFiwm1ZO",
+    "otpExpires": 1781440078254,
+    "lastOtp": "200236"
+  },
+  {
+    "_id": "9",
+    "name": "Shailendra",
+    "email": "skillmanth@gmail.com",
+    "password": "$2a$10$CUJKGDaTAwQAC/IRcfHvru7IvIUbYEdxx9.NChvzG/F8x4pWUA4Gy",
+    "verified": false,
+    "otpHash": "$2a$10$4e3zWANvCJB/zJTvc.NdVuwtYDcJoAFHK.UzfNP3fDuZznlqm99ku",
+    "otpExpires": 1781441855876,
+    "lastOtp": "147962"
+  },
+  {
+    "_id": "10",
+    "name": "sk",
+    "email": "as@gmail.com",
+    "password": "$2a$10$iiwwottnKk3EC78ZYHJpsOWa2.ivc3KXQKtTVS78LLCoyfwvm5jDC",
+    "verified": true
+  }
+]

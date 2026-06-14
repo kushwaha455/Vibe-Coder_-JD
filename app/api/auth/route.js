@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
+import bcrypt from 'bcryptjs';
 import dbConnect from '../../../lib/db';
 import Employee from '../../../lib/Employee';
-import { getEmployees } from '../../../lib/mockData';
+import { getAuthUsers } from '../../../lib/mockData';
 
 function normalizeEmail(email) {
   return String(email || '').trim().toLowerCase();
@@ -11,10 +12,18 @@ function normalizePassword(password) {
   return String(password || '').trim();
 }
 
-function passwordMatches(user, password) {
+async function passwordMatches(user, password) {
   const trimmed = normalizePassword(password);
   if (trimmed.toLowerCase() === 'password') return true;
-  return Boolean(user.password && user.password === trimmed);
+  if (!user?.password) return false;
+  if (String(user.password) === trimmed) return true;
+
+  try {
+    return await bcrypt.compare(trimmed, String(user.password));
+  } catch (error) {
+    console.error('Password compare error:', error?.message || error);
+    return false;
+  }
 }
 
 function toPlainUser(user) {
@@ -29,9 +38,9 @@ function authSuccess(user) {
 }
 
 async function findUserInMockData(email) {
-  const employees = await getEmployees();
+  const users = await getAuthUsers();
   const normalized = normalizeEmail(email);
-  return employees.find((employee) => normalizeEmail(employee.email) === normalized) || null;
+  return users.find((user) => normalizeEmail(user.email) === normalized) || null;
 }
 
 async function findUserInDb(email) {
@@ -71,7 +80,9 @@ export async function POST(request) {
     );
   }
 
-  if (!passwordMatches(user, password)) {
+  // Verification is no longer required for login.
+
+  if (!(await passwordMatches(user, password))) {
     return NextResponse.json(
       { success: false, error: 'Invalid credentials. Demo password is "password".' },
       { status: 401 }

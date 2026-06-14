@@ -12,7 +12,6 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      // Yeh request seedhe hamari register API par jayegi
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -21,9 +20,9 @@ export default function RegisterPage() {
 
       const data = await res.json();
 
-      if (res.ok) {
-        alert("Account successfully ban gaya! Ab login karein.");
-        window.location.href = "/login"; // Sahi hone par login page par bhej dega
+      if (res.ok && data.success) {
+        alert(data.message || "Account created. Ab login karein.");
+        window.location.href = '/login';
       } else {
         alert(data.message || "Registration fail ho gaya!");
       }
@@ -44,7 +43,7 @@ export default function RegisterPage() {
         width: "100%", maxWidth: "400px", boxShadow: "0 4px 6px -1px rgba(0,0,0,0.5)"
       }}>
         <h2 style={{ marginBottom: "20px", textAlign: "center" }}>Create Account</h2>
-        
+
         <div style={{ marginBottom: "15px" }}>
           <label style={{ display: "block", marginBottom: "5px" }}>Name</label>
           <input type="text" value={name} onChange={(e) => setName(e.target.value)} required 

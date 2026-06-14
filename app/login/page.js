@@ -38,6 +38,7 @@ export default function LoginPage() {
         return;
       }
       if (data.token) localStorage.setItem("token", data.token);
+      if (data.user?.name) localStorage.setItem("userName", data.user.name);
       router.push("/");
     } catch (err) {
       setError("Network error");
