@@ -1,211 +1,203 @@
 'use client';
 import { useState, useEffect } from 'react';
 
-export default function Home() {
-  const [tasks, setTasks] = useState([]);
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [priority, setPriority] = useState('Medium');
-  const [loading, setLoading] = useState(false);
+export default function EmployeesPage() {
+  const [employees, setEmployees] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [formData, setFormData] = useState({
+    name: '', email: '', phone: '', role: '', department: '', salary: ''
+  });
+  const [editId, setEditId] = useState(null);
 
-  const fetchTasks = async () => {
-    const res = await fetch('/api/tasks');
-    const json = await res.json();
-    if (json.success) setTasks(json.data);
+  // 1. Fetch data from local JSON API
+  const fetchEmployees = async () => {
+    try {
+      const res = await fetch('/api/employees');
+      const result = await res.json();
+      if (result.success) setEmployees(result.data);
+    } catch (err) {
+      console.error("Error fetching employees:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
-    fetchTasks();
+    fetchEmployees();
   }, []);
 
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  // 2. Submit Handle (Add or Update)
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!title) return;
-    setLoading(true);
+    const method = editId ? 'PUT' : 'POST';
+    const url = editId ? `/api/employees/${editId}` : '/api/employees';
 
-    const res = await fetch('/api/tasks', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title, description, priority })
-    });
-    
-    if (res.ok) {
-      setTitle('');
-      setDescription('');
-      setPriority('Medium');
-      fetchTasks();
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+      const result = await res.json();
+
+      if (result.success) {
+        fetchEmployees(); // List refresh karo
+        setFormData({ name: '', email: '', phone: '', role: '', department: '', salary: '' });
+        setEditId(null);
+        alert(editId ? "Employee details updated!" : "Employee added successfully!");
+      } else {
+        alert("Error: " + result.error);
+      }
+    } catch (err) {
+      alert("Something went wrong!");
     }
-    setLoading(false);
   };
 
-  const updateStatus = async (id, newStatus) => {
-    await fetch(`/api/tasks/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: newStatus })
+  // 3. Edit Trigger
+  const handleEdit = (emp) => {
+    setEditId(emp._id); // Yahan string ID track hogi
+    setFormData({
+      name: emp.name,
+      email: emp.email,
+      phone: emp.phone,
+      role: emp.role,
+      department: emp.department,
+      salary: emp.salary
     });
-    fetchTasks();
   };
 
-  const deleteTask = async (id) => {
-    await fetch(`/api/tasks/${id}`, { method: 'DELETE' });
-    fetchTasks();
+  // 4. Delete Handle
+  const handleDelete = async (id) => {
+    if (!confirm("Are you sure you want to remove this employee?")) return;
+    try {
+      const res = await fetch(`/api/employees/${id}`, { method: 'DELETE' });
+      const result = await res.json();
+      if (result.success) {
+        fetchEmployees(); // List refresh karo
+        alert("Employee deleted successfully!");
+      } else {
+        alert("Could not delete from file!");
+      }
+    } catch (err) {
+      alert("Could not delete!");
+    }
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-950 p-6 text-slate-100 font-sans">
-      
-      {/* Premium Header */}
-      <header className="max-w-6xl mx-auto text-center my-10 space-y-2">
-        <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 drop-shadow-sm">
-          Vibe Task Manager
+    <div style={{ fontFamily: 'Arial, sans-serif', backgroundColor: '#111827', color: '#ffffff', minHeight: '100vh', padding: '40px 20px' }}>
+      <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+        <h1 style={{ color: '#60a5fa', marginBottom: '30px', borderBottom: '2px solid #374151', paddingBottom: '15px' }}>
+          📊 Employee Management Dashboard
         </h1>
-        <p className="text-slate-400 text-sm md:text-base font-medium tracking-wide">
-          An AI-First Kanban Workspace for High-Velocity Builders
-        </p>
-      </header>
-      
-      {/* Glassmorphic Form Container */}
-      <section className="max-w-xl mx-auto backdrop-blur-md bg-white/5 border border-white/10 p-6 rounded-2xl shadow-2xl mb-14 transition-all duration-300 hover:border-indigo-500/30">
-        <h2 className="text-xl font-bold mb-5 tracking-wide text-indigo-300 flex items-center gap-2">
-          <span className="h-2 w-2 rounded-full bg-indigo-400 animate-pulse"></span>
-          Deploy New Task
-        </h2>
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <input 
-            type="text" 
-            placeholder="What needs to be built?" 
-            value={title} 
-            onChange={e => setTitle(e.target.value)}
-            className="w-full bg-slate-900/50 border border-slate-700 rounded-xl p-3 text-sm focus:outline-none focus:border-indigo-500 text-slate-200 placeholder-slate-500 transition" 
-            required
-          />
-          <textarea 
-            placeholder="Add some engineering details or context..." 
-            value={description} 
-            onChange={e => setDescription(e.target.value)}
-            rows="3"
-            className="w-full bg-slate-900/50 border border-slate-700 rounded-xl p-3 text-sm focus:outline-none focus:border-indigo-500 text-slate-200 placeholder-slate-500 transition resize-none"
-          />
+
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '30px' }}>
           
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="w-full">
-              <select 
-                value={priority} 
-                onChange={e => setPriority(e.target.value)} 
-                className="w-full bg-slate-900/50 border border-slate-700 rounded-xl p-3 text-sm focus:outline-none focus:border-indigo-500 text-slate-300 cursor-pointer transition"
-              >
-                <option value="Low" className="bg-slate-900">Low Priority</option>
-                <option value="Medium" className="bg-slate-900">Medium Priority</option>
-                <option value="High" className="bg-slate-900">High Priority</option>
-              </select>
-            </div>
-            
-            <button 
-              type="submit" 
-              disabled={loading}
-              className="w-full sm:w-auto bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-6 rounded-xl font-semibold text-sm shadow-lg shadow-indigo-500/20 active:scale-95 transition-all duration-200 flex items-center justify-center min-h-[46px]"
-            >
-              {loading ? 'Adding...' : 'Add Task +'}
-            </button>
+          {/* FORM */}
+          <div style={{ flex: '1 1 350px', backgroundColor: '#1f2937', padding: '25px', borderRadius: '12px', border: '1px solid #4b5563', height: 'fit-content' }}>
+            <h2 style={{ fontSize: '1.25rem', marginBottom: '20px', color: '#f3f4f6' }}>
+              {editId ? "✏️ Edit Employee Details" : "➕ Add New Employee"}
+            </h2>
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', color: '#9ca3af', marginBottom: '5px' }}>Full Name</label>
+                <input type="text" name="name" value={formData.name} onChange={handleChange} required
+                  style={{ width: '100%', padding: '10px', backgroundColor: '#374151', border: '1px solid #4b5563', color: '#fff', borderRadius: '6px', boxSizing: 'border-box' }} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', color: '#9ca3af', marginBottom: '5px' }}>Email</label>
+                <input type="email" name="email" value={formData.email} onChange={handleChange} required
+                  style={{ width: '100%', padding: '10px', backgroundColor: '#374151', border: '1px solid #4b5563', color: '#fff', borderRadius: '6px', boxSizing: 'border-box' }} />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', color: '#9ca3af', marginBottom: '5px' }}>Phone</label>
+                <input type="text" name="phone" value={formData.phone} onChange={handleChange} required
+                  style={{ width: '100%', padding: '10px', backgroundColor: '#374151', border: '1px solid #4b5563', color: '#fff', borderRadius: '6px', boxSizing: 'border-box' }} />
+              </div>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', fontSize: '0.85rem', color: '#9ca3af', marginBottom: '5px' }}>Role</label>
+                  <input type="text" name="role" value={formData.role} onChange={handleChange} required
+                    style={{ width: '100%', padding: '10px', backgroundColor: '#374151', border: '1px solid #4b5563', color: '#fff', borderRadius: '6px', boxSizing: 'border-box' }} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', fontSize: '0.85rem', color: '#9ca3af', marginBottom: '5px' }}>Department</label>
+                  <input type="text" name="department" value={formData.department} onChange={handleChange} required
+                    style={{ width: '100%', padding: '10px', backgroundColor: '#374151', border: '1px solid #4b5563', color: '#fff', borderRadius: '6px', boxSizing: 'border-box' }} />
+                </div>
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', color: '#9ca3af', marginBottom: '5px' }}>Monthly Salary (₹)</label>
+                <input type="number" name="salary" value={formData.salary} onChange={handleChange} required
+                  style={{ width: '100%', padding: '10px', backgroundColor: '#374151', border: '1px solid #4b5563', color: '#fff', borderRadius: '6px', boxSizing: 'border-box' }} />
+              </div>
+              <button type="submit" style={{ backgroundColor: '#2563eb', color: '#fff', padding: '12px', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold', marginTop: '10px' }}>
+                {editId ? "Update Employee" : "Save Employee"}
+              </button>
+              {editId && (
+                <button type="button" onClick={() => { setEditId(null); setFormData({ name: '', email: '', phone: '', role: '', department: '', salary: '' }); }}
+                  style={{ backgroundColor: '#4b5563', color: '#fff', padding: '10px', border: 'none', borderRadius: '6px', cursor: 'pointer', marginTop: '5px' }}>
+                  Cancel Edit
+                </button>
+              )}
+            </form>
           </div>
-        </form>
-      </section>
 
-      {/* Kanban Board Grid */}
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto items-start">
-        {['Todo', 'Progress', 'Done'].map((colStatus) => {
-          const colTasks = tasks.filter(t => t.status === colStatus);
-          
-          // Custom Column Header Colors
-          const headerColors = {
-            Todo: 'text-sky-400 border-sky-500/20 bg-sky-500/5',
-            Progress: 'text-amber-400 border-amber-500/20 bg-amber-500/5',
-            Done: 'text-emerald-400 border-emerald-500/20 bg-emerald-500/5'
-          };
+          {/* TABLE LIST */}
+          <div style={{ flex: '1 1 600px', backgroundColor: '#1f2937', padding: '25px', borderRadius: '12px', border: '1px solid #4b5563', overflowX: 'auto' }}>
+            <h2 style={{ fontSize: '1.25rem', marginBottom: '20px', color: '#f3f4f6' }}>👥 Active Staff Directory ({employees.length})</h2>
+            
+            {loading ? (
+              <p style={{ color: '#9ca3af' }}>Loading database...</p>
+            ) : employees.length === 0 ? (
+              <p style={{ color: '#9ca3af' }}>No employees found. Add some from the left form!</p>
+            ) : (
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                <thead>
+                  <tr style={{ borderBottom: '2px solid #374151', color: '#9ca3af', fontSize: '0.9rem' }}>
+                    <th style={{ paddingBottom: '12px' }}>Name / Role</th>
+                    <th style={{ paddingBottom: '12px' }}>Contact</th>
+                    <th style={{ paddingBottom: '12px' }}>Department</th>
+                    <th style={{ paddingBottom: '12px' }}>Salary</th>
+                    <th style={{ paddingBottom: '12px', textAlign: 'center' }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody style={{ fontSize: '0.9rem' }}>
+                  {employees.map((emp) => (
+                    <tr key={emp._id} style={{ borderBottom: '1px solid #374151' }}>
+                      <td style={{ padding: '12px 0' }}>
+                        <div style={{ fontWeight: 'bold', color: '#fff' }}>{emp.name}</div>
+                        <div style={{ fontSize: '0.8rem', color: '#9ca3af' }}>{emp.role}</div>
+                      </td>
+                      <td style={{ padding: '12px 0' }}>
+                        <div>{emp.email}</div>
+                        <div style={{ fontSize: '0.8rem', color: '#6b7280' }}>{emp.phone}</div>
+                      </td>
+                      <td style={{ padding: '12px 0' }}>
+                        <span style={{ backgroundColor: '#1e3a8a', color: '#93c5fd', padding: '4px 10px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '500' }}>
+                          {emp.department}
+                        </span>
+                      </td>
+                      <td style={{ padding: '12px 0', color: '#34d399', fontWeight: 'bold' }}>
+                        ₹{Number(emp.salary).toLocaleString('en-IN')}
+                      </td>
+                      <td style={{ padding: '12px 0', textAlign: 'center' }}>
+                        {/* Fix: Directly passing emp object & _id */}
+                        <button onClick={() => handleEdit(emp)} style={{ background: 'none', border: 'none', color: '#60a5fa', cursor: 'pointer', marginRight: '10px', fontWeight: 'bold' }}>Edit</button>
+                        <button onClick={() => handleDelete(emp._id)} style={{ background: 'none', border: 'none', color: '#f87171', cursor: 'pointer', fontWeight: 'bold' }}>Delete</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
 
-          return (
-            <div key={colStatus} className="bg-slate-900/40 border border-slate-800 rounded-2xl p-4 min-h-[450px] shadow-xl backdrop-blur-sm flex flex-col">
-              <div className={`flex justify-between items-center px-3 py-2 rounded-xl border ${headerColors[colStatus]} mb-5`}>
-                <h3 className="font-bold tracking-wider text-sm uppercase">
-                  {colStatus === 'Progress' ? 'In Progress' : colStatus}
-                </h3>
-                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-slate-800/80 border border-white/5">
-                  {colTasks.length}
-                </span>
-              </div>
-              
-              <div className="space-y-3 overflow-y-auto flex-1 max-h-[500px] pr-1 scrollbar-thin">
-                {colTasks.length === 0 ? (
-                  <p className="text-slate-600 text-xs text-center py-10 italic">No tasks here</p>
-                ) : (
-                  colTasks.map(task => {
-                    // Priority Badge Colors
-                    const priorityStyles = {
-                      High: 'bg-rose-500/10 text-rose-400 border-rose-500/20',
-                      Medium: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
-                      Low: 'bg-slate-500/10 text-slate-400 border-slate-500/20'
-                    };
-
-                    return (
-                      <div 
-                        key={task._id} 
-                        className="group bg-slate-900 border border-slate-800 p-4 rounded-xl shadow-md hover:border-slate-700 hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between"
-                      >
-                        <div>
-                          <div className="flex justify-between items-start gap-2 mb-2">
-                            <h4 className="font-bold text-slate-200 text-base break-words tracking-wide group-hover:text-white transition">
-                              {task.title}
-                            </h4>
-                            <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-md font-bold border ${priorityStyles[task.priority]}`}>
-                              {task.priority}
-                            </span>
-                          </div>
-                          {task.description && (
-                            <p className="text-slate-400 text-xs mb-4 leading-relaxed break-words font-light">
-                              {task.description}
-                            </p>
-                          )}
-                        </div>
-                        
-                        {/* Interactive Actions Panel */}
-                        <div className="flex justify-between items-center border-t border-slate-800/60 pt-3 text-[11px] font-medium">
-                          <button 
-                            onClick={() => deleteTask(task._id)} 
-                            className="text-slate-500 hover:text-rose-400 transition font-semibold tracking-wide"
-                          >
-                            Delete
-                          </button>
-                          
-                          <div className="flex gap-2">
-                            {colStatus !== 'Todo' && (
-                              <button 
-                                onClick={() => updateStatus(task._id, colStatus === 'Done' ? 'Progress' : 'Todo')} 
-                                className="text-slate-400 hover:text-slate-200 flex items-center transition bg-slate-800/50 px-2 py-1 rounded-md border border-slate-700/50"
-                              >
-                                ◀ Back
-                              </button>
-                            )}
-                            {colStatus !== 'Done' && (
-                              <button 
-                                onClick={() => updateStatus(task._id, colStatus === 'Todo' ? 'Progress' : 'Done')} 
-                                className="text-indigo-400 hover:text-indigo-300 font-semibold flex items-center transition bg-indigo-950/40 px-2 py-1 rounded-md border border-indigo-900/50"
-                              >
-                                Next ▶
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </section>
-    </main>
+        </div>
+      </div>
+    </div>
   );
 }

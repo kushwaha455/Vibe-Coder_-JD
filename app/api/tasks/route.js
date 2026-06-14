@@ -1,26 +1,47 @@
 import { NextResponse } from 'next/server';
-import dbConnect from '@/lib/db';
-import Task from '@/lib/Task';
+import dbConnect from '../../../lib/db';
+import Task from '../../../lib/Task';
+import { getTasks, saveTasks, newTaskId } from '../../../lib/mockData';
 
-// GET: Fetch all tasks from DB
-export async function GET() {
-  await dbConnect();
+async function tryDb(callback, fallback) {
   try {
-    const tasks = await Task.find({}).sort({ createdAt: -1 });
-    return NextResponse.json({ success: true, data: tasks });
+    await dbConnect();
+    return await callback();
   } catch (error) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+    console.error('DB fallback used for tasks route:', error?.message || error);
+    return await fallback(error);
   }
 }
 
-// POST: Save a new task to DB
+// GET: list tasks
+export async function GET() {
+  return tryDb(
+    async () => {
+      const tasks = await Task.find({});
+      return NextResponse.json({ success: true, data: tasks });
+    },
+    async () => {
+      const tasks = await getTasks();
+      return NextResponse.json({ success: true, data: tasks });
+    }
+  );
+}
+
+// POST: create task
 export async function POST(request) {
-  await dbConnect();
-  try {
-    const body = await request.json();
-    const task = await Task.create(body);
-    return NextResponse.json({ success: true, data: task }, { status: 201 });
-  } catch (error) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 400 });
-  }
+  const body = await request.json();
+
+  return tryDb(
+    async () => {
+      const newTask = await Task.create(body);
+      return NextResponse.json({ success: true, data: newTask }, { status: 201 });
+    },
+    async () => {
+      const tasks = await getTasks();
+      const newTask = { _id: newTaskId(tasks), ...body };
+      tasks.push(newTask);
+      await saveTasks(tasks);
+      return NextResponse.json({ success: true, data: newTask }, { status: 201 });
+    }
+  );
 }

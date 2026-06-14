@@ -1,0 +1,29 @@
+[
+  {
+    "_id": "1",
+    "name": "Ayesha Sharma",
+    "email": "ayesha.sharma@example.com",
+    "phone": "+91 98765 43210",
+    "role": "Marketing Lead",
+    "department": "Marketing",
+    "salary": 67000
+  },
+  {
+    "_id": "2",
+    "name": "Rohan Patel",
+    "email": "rohan.patel@example.com",
+    "phone": "+91 91234 56789",
+    "role": "Frontend Developer",
+    "department": "Engineering",
+    "salary": 82000
+  },
+  {
+    "_id": "3",
+    "name": "Shailendra Singh Kushwaha",
+    "email": "skushawah455@gmail.com",
+    "phone": "7905371604",
+    "role": "Marketing Lead",
+    "department": "Marketing",
+    "salary": "50000"
+  }
+]
