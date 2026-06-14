@@ -16,14 +16,5 @@
     "role": "Development",
     "department": "it",
     "salary": "40000"
-  },
-  {
-    "_id": "undefined",
-    "name": "Shailendra Singh Kushwaha",
-    "email": "skushawah455@gmail.com",
-    "phone": "07905371604",
-    "role": "Development",
-    "department": "it",
-    "salary": 40001
   }
 ]

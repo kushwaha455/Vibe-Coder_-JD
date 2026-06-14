@@ -79,7 +79,15 @@ export async function POST(req) {
     users.push(newUser);
   }
 
-  await saveAuthUsers(users);
+  try {
+    await saveAuthUsers(users);
+  } catch (error) {
+    console.error('Failed to save auth users:', error?.message || error);
+    return NextResponse.json(
+      { success: false, message: 'Unable to save registration data. Please try again later.' },
+      { status: 500 }
+    );
+  }
 
   return tryDb(
     async () => {

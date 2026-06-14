@@ -18,13 +18,20 @@ export default function RegisterPage() {
         body: JSON.stringify({ name, email, password }),
       });
 
-      const data = await res.json();
+      const text = await res.text();
+      let data;
+      try {
+        data = text ? JSON.parse(text) : null;
+      } catch (parseError) {
+        alert("Server returned invalid response: " + text);
+        return;
+      }
 
-      if (res.ok && data.success) {
+      if (res.ok && data?.success) {
         alert(data.message || "Account created. Ab login karein.");
         window.location.href = '/login';
       } else {
-        alert(data.message || "Registration fail ho gaya!");
+        alert(data?.message || "Registration fail ho gaya!");
       }
     } catch (error) {
       alert("Koi error aaya: " + error.message);

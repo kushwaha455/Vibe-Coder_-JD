@@ -37,6 +37,14 @@ export default function EmployeesPage() {
     }
   }, []);
 
+  const normalizeEmployeeId = (id) => {
+    const value = String(id ?? '').trim();
+    if (!value || value === 'undefined' || value === 'null') return null;
+    return value;
+  };
+
+  const getEmployeeId = (emp) => normalizeEmployeeId(emp._id ?? emp.id);
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -58,8 +66,15 @@ export default function EmployeesPage() {
     clearStatus();
     setSaving(true);
 
-    const method = editId ? 'PUT' : 'POST';
-    const url = editId ? `/api/employees/${editId}` : '/api/employees';
+    const validEditId = normalizeEmployeeId(editId);
+    if (editId && !validEditId) {
+      setStatusType('error');
+      setStatusMessage('Invalid employee selected for editing. Please select the employee again.');
+      setSaving(false);
+      return;
+    }
+    const method = validEditId ? 'PUT' : 'POST';
+    const url = validEditId ? `/api/employees/${validEditId}` : '/api/employees';
     const payload = {
       ...formData,
       salary: formData.salary !== '' ? Number(formData.salary) : 0,
@@ -100,7 +115,13 @@ export default function EmployeesPage() {
 
   const handleEdit = (emp) => {
     clearStatus();
-    setEditId(String(emp._id));
+    const employeeId = getEmployeeId(emp);
+    if (!employeeId) {
+      setStatusType('error');
+      setStatusMessage('Cannot edit this employee because the record ID is invalid. Please refresh and try again.');
+      return;
+    }
+    setEditId(employeeId);
     setFormData({
       name: emp.name || '',
       email: emp.email || '',
@@ -111,13 +132,19 @@ export default function EmployeesPage() {
     });
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (idOrEmp) => {
+    const validId = typeof idOrEmp === 'object' ? getEmployeeId(idOrEmp) : normalizeEmployeeId(idOrEmp);
+    if (!validId) {
+      setStatusType('error');
+      setStatusMessage('Invalid employee selected for deletion. Please refresh and try again.');
+      return;
+    }
     if (!confirm('Are you sure you want to remove this employee?')) return;
 
     clearStatus();
 
     try {
-      const res = await fetch(`/api/employees/${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/employees/${validId}`, { method: 'DELETE' });
       const result = await res.json();
 
       if (!res.ok || !result.success) {
@@ -134,7 +161,7 @@ export default function EmployeesPage() {
         window.alert('Employee deleted successfully.');
       }
 
-      if (editId === id) {
+      if (normalizeEmployeeId(editId) === validId) {
         clearForm();
       }
     } catch (err) {
@@ -234,8 +261,11 @@ export default function EmployeesPage() {
                   </tr>
                 </thead>
                 <tbody style={{ fontSize: '0.9rem' }}>
-                  {employees.map((emp) => (
-                    <tr key={emp._id} style={{ borderBottom: '1px solid #374151' }}>
+                  {employees.map((emp, index) => {
+                    const employeeId = getEmployeeId(emp);
+                    const actionDisabled = !employeeId;
+                    return (
+                      <tr key={employeeId ?? emp.email ?? emp.phone ?? index} style={{ borderBottom: '1px solid #374151' }}>
                       <td style={{ padding: '12px 0' }}>
                         <div style={{ fontWeight: 'bold', color: '#fff' }}>{emp.name}</div>
                         <div style={{ fontSize: '0.8rem', color: '#9ca3af' }}>{emp.role}</div>
@@ -254,11 +284,36 @@ export default function EmployeesPage() {
                       </td>
                       <td style={{ padding: '12px 0', textAlign: 'center' }}>
                         {/* Fix: Directly passing emp object & _id */}
-                        <button onClick={() => handleEdit(emp)} style={{ background: 'none', border: 'none', color: '#60a5fa', cursor: 'pointer', marginRight: '10px', fontWeight: 'bold' }}>Edit</button>
-                        <button onClick={() => handleDelete(emp._id)} style={{ background: 'none', border: 'none', color: '#f87171', cursor: 'pointer', fontWeight: 'bold' }}>Delete</button>
+                        <button
+                          onClick={() => handleEdit(emp)}
+                          disabled={actionDisabled}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            color: actionDisabled ? '#6b7280' : '#60a5fa',
+                            cursor: actionDisabled ? 'not-allowed' : 'pointer',
+                            marginRight: '10px',
+                            fontWeight: 'bold'
+                          }}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDelete(emp)}
+                          disabled={actionDisabled}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            color: actionDisabled ? '#6b7280' : '#f87171',
+                            cursor: actionDisabled ? 'not-allowed' : 'pointer',
+                            fontWeight: 'bold'
+                          }}
+                        >
+                          Delete
+                        </button>
                       </td>
                     </tr>
-                  ))}
+                  )})}
                 </tbody>
               </table>
             )}

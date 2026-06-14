@@ -2,12 +2,11 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 export default function Header() {
   const router = useRouter();
-  const pathname = usePathname();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(null);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -19,7 +18,7 @@ export default function Header() {
     updateAuthState();
     window.addEventListener('storage', updateAuthState);
     return () => window.removeEventListener('storage', updateAuthState);
-  }, [pathname]);
+  }, []);
 
   function handleLogout(e) {
     e.preventDefault();
@@ -32,7 +31,7 @@ export default function Header() {
   }
 
   return (
-    <header style={{ background: '#0f172a', color: '#f8fafc', padding: '14px 24px' }}>
+    <header suppressHydrationWarning style={{ background: '#0f172a', color: '#f8fafc', padding: '14px 24px' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', maxWidth: 1160, margin: '0 auto' }}>
         <div>
           <Link href="/" style={{ color: '#fff', fontSize: 20, fontWeight: 700, textDecoration: 'none' }}>
@@ -42,15 +41,15 @@ export default function Header() {
         </div>
 
         <nav style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-          <Link href="/" style={{ color: pathname === '/' ? '#38bdf8' : '#e2e8f0', textDecoration: 'none', fontWeight: 600 }}>
+          <Link href="/" style={{ color: '#e2e8f0', textDecoration: 'none', fontWeight: 600 }}>
             Home
           </Link>
-          {!isAuthenticated && (
-            <Link href="/login" style={{ color: pathname === '/login' ? '#38bdf8' : '#e2e8f0', textDecoration: 'none', fontWeight: 600 }}>
+          {isAuthenticated === false && (
+            <Link href="/login" style={{ color: '#e2e8f0', textDecoration: 'none', fontWeight: 600 }}>
               Login
             </Link>
           )}
-          {isAuthenticated && (
+          {isAuthenticated === true && (
             <button
               onClick={handleLogout}
               style={{

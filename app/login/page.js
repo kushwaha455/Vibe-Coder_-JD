@@ -31,14 +31,22 @@ export default function LoginPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: loginEmail, password: loginPassword }),
       });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || "Login failed");
+      const text = await res.text();
+      let data;
+      try {
+        data = text ? JSON.parse(text) : null;
+      } catch (parseError) {
+        setError("Server returned invalid response: " + text);
         setLoading(false);
         return;
       }
-      if (data.token) localStorage.setItem("token", data.token);
-      if (data.user?.name) localStorage.setItem("userName", data.user.name);
+      if (!res.ok) {
+        setError(data?.error || "Login failed");
+        setLoading(false);
+        return;
+      }
+      if (data?.token) localStorage.setItem("token", data.token);
+      if (data?.user?.name) localStorage.setItem("userName", data.user.name);
       router.push("/");
     } catch (err) {
       setError("Network error");

@@ -78,5 +78,54 @@
     "email": "as@gmail.com",
     "password": "$2a$10$iiwwottnKk3EC78ZYHJpsOWa2.ivc3KXQKtTVS78LLCoyfwvm5jDC",
     "verified": true
+  },
+  {
+    "_id": "11",
+    "name": "sk",
+    "email": "skkk@gmail.com",
+    "password": "$2a$10$cdlLhP.Or86Y6LiA.lDSqejdjREBO3FwTXVoAD9nhAPU8G6m9QUsa",
+    "verified": true
+  },
+  {
+    "_id": "12",
+    "name": "shailendra",
+    "email": "aa@gmail.com",
+    "password": "$2a$10$OJMcNTXYd1uray32KEq9zuxj61aogrEl05Z49mzhKYTjC.NkrKc9K",
+    "verified": true
+  },
+  {
+    "_id": "13",
+    "name": "Shailendra",
+    "email": "Shailendra12@gmail.com",
+    "password": "$2a$10$Zr5ygpzvu1.LdOQqpkbToeeV/tL75JYjRA/HY/QtWtE3NcE8sWiQG",
+    "verified": true
+  },
+  {
+    "_id": "14",
+    "name": "yyy",
+    "email": "yyy@gmail",
+    "password": "$2a$10$pRufro7KRVJblhGx6p2LtO2PpZUBgIXB0C9MRflCHZHPrCe0cRq0S",
+    "verified": true
+  },
+  {
+    "_id": "15",
+    "name": "Shailendra",
+    "email": "Shailendra123@gmail.com",
+    "password": "$2a$10$b6zHewG5XTi5yrannyJbIu8/3uaGjlFc6129A.c11.ebQ6tD0ENvm",
+    "verified": true
+  },
+  {
+    "_id": "16",
+    "name": "shailendra",
+    "email": "xyz@gmail",
+    "password": "$2a$10$6APsvg0eqa2otOCFRfNaauqPqbVdCxzXMiEDIlOieIlYM3BAzqOF2",
+    "verified": true
+  },
+  {
+    "_id": "17",
+    "name": "Sahailendra",
+    "email": "Shailendrasingh12@gmail.com",
+    "password": "$2a$10$lDyCwOaV8gekbl6IVbDBP.yRCtB3glRXbTI0uRKpc.MJAO6YvVUai",
+    "verified": true
   }
 ]

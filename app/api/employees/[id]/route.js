@@ -13,8 +13,18 @@ async function tryDb(callback, fallback) {
   }
 }
 
+const normalizeId = (id) => {
+  const value = String(id ?? '').trim();
+  if (!value || value === 'undefined' || value === 'null') return null;
+  return value;
+};
+
 export async function GET(request, context) {
-  const { id } = context.params;
+  const params = await context.params;
+  const id = normalizeId(params.id);
+  if (!id) {
+    return NextResponse.json({ success: false, error: 'Invalid employee ID' }, { status: 400 });
+  }
   return tryDb(
     async () => {
       const emp = await Employee.findById(id);
@@ -33,7 +43,11 @@ async function getFallbackEmployee(id) {
 }
 
 export async function PUT(request, context) {
-  const { id } = context.params;
+  const params = await context.params;
+  const id = normalizeId(params.id);
+  if (!id) {
+    return NextResponse.json({ success: false, error: 'Invalid employee ID' }, { status: 400 });
+  }
   const body = await request.json();
 
   return tryDb(
@@ -50,10 +64,7 @@ async function updateFallbackEmployee(id, body) {
   const employees = await getEmployees();
   const idx = employees.findIndex((e) => String(e._id) === String(id));
   if (idx === -1) {
-    const newEmployee = { _id: String(id), ...body };
-    employees.push(newEmployee);
-    await saveEmployees(employees);
-    return NextResponse.json({ success: true, data: newEmployee });
+    return NextResponse.json({ success: false, error: 'Employee not found' }, { status: 404 });
   }
   employees[idx] = { ...employees[idx], ...body };
   await saveEmployees(employees);
@@ -61,7 +72,11 @@ async function updateFallbackEmployee(id, body) {
 }
 
 export async function DELETE(request, context) {
-  const { id } = context.params;
+  const params = await context.params;
+  const id = normalizeId(params.id);
+  if (!id) {
+    return NextResponse.json({ success: false, error: 'Invalid employee ID' }, { status: 400 });
+  }
   return tryDb(
     async () => {
       const deleted = await Employee.findByIdAndDelete(id);
